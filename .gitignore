@@ -1,0 +1,16 @@
+.env
+*.db
+instance/
+__pycache__/
+.venv/
+service-account.json
+.pytest_cache/
+__pycache__/
+*.py[cod]
+_phone_flow_backup_*/
+_preintegration_backup_*/
+*_backup_*/
+.wrangler/
+node_modules/
+.vscode/
+.venv/

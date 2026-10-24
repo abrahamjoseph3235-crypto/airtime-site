@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Start your airtime reward{% endblock %}
+{% block steps %}<ol class="steps"><li class="on">Enter number</li><li>Complete form</li><li>Upload evidence</li><li>Manual review</li></ol>{% endblock %}
+{% block content %}
+<h1>Apply for an airtime reward</h1>
+<p>Enter your Nigerian mobile number once. Complete the Google Form, upload screenshots, and wait for manual review. Approved rewards are delivered manually by the owner.</p>
+<form method="post" class="card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label for="phone">Respondent phone number</label>
+  <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="0803 000 0000" required maxlength="18" autocomplete="tel">
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  <button class="btn" type="submit">Continue to form</button>
+</form>
+<p class="small">You must provide screenshots showing the phone number, the selected referrer Kelechi, and the form submission confirmation. Each phone number can submit evidence only once.</p>
+{% endblock %}

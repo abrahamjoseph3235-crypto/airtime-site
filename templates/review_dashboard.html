@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Private evidence review{% endblock %}
+{% block content %}
+<h1>Evidence review</h1>
+<p>Review screenshots carefully before manually sending any airtime. An approval here records your decision only; it does not send airtime.</p>
+<div class="stats-grid" aria-label="Submission totals">
+  <section class="card"><p class="small">Unique phone numbers submitted</p><p class="stat-number">{{ total_phone_numbers }}</p></section>
+  <section class="card"><p class="small">Eligible phone numbers</p><p class="stat-number">{{ eligible_phone_numbers }}</p><p class="small">Approved or airtime marked as sent</p></section>
+  <section class="card"><p class="small">Awaiting review</p><p class="stat-number">{{ pending_count }}</p></section>
+</div>
+<form method="post" action="{{ url_for('review_logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-secondary" type="submit">Sign out</button></form>
+{% if not submissions %}<p>No submissions yet.</p>{% endif %}
+{% for item in submissions %}
+<section class="card review-card">
+  <h2>Submission #{{ item.id }}</h2>
+  <p><strong>Phone:</strong> {{ item.phone }}</p>
+  <p><strong>Network:</strong> {{ item.network }}</p>
+  <p><strong>Status:</strong> <span class="status status-{{ item.status }}">{{ item.status|capitalize }}</span></p>
+  <p><strong>Submitted:</strong> {{ item.created_at.strftime("%d %b %Y, %H:%M UTC") }}</p>
+  <ul class="evidence-links">
+    <li><a href="{{ url_for('review_evidence_image', submission_id=item.id, kind='referral') }}">Download referrer screenshot</a></li>
+    <li><a href="{{ url_for('review_evidence_image', submission_id=item.id, kind='confirmation') }}">Download confirmation screenshot</a></li>
+  </ul>
+  {% if item.status == "pending" %}
+  <form method="post" action="{{ url_for('review_decision', submission_id=item.id, decision='approve') }}" class="review-decision">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="note-a-{{ item.id }}">Reviewer note (optional)</label><input id="note-a-{{ item.id }}" name="reviewer_note" maxlength="500">
+    <button class="btn" type="submit">Approve for manual reward</button>
+  </form>
+  <form method="post" action="{{ url_for('review_decision', submission_id=item.id, decision='reject') }}" class="review-decision">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="note-r-{{ item.id }}">Reason (optional)</label><input id="note-r-{{ item.id }}" name="reviewer_note" maxlength="500">
+    <button class="btn btn-danger" type="submit">Reject evidence</button>
+  </form>
+  {% elif item.status == "approved" %}
+  <p>Approved. After you manually send the airtime outside this website, record it here.</p>
+  <form method="post" action="{{ url_for('review_decision', submission_id=item.id, decision='mark-sent') }}" class="review-decision">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="sent-note-{{ item.id }}">Delivery note (optional)</label><input id="sent-note-{{ item.id }}" name="reviewer_note" maxlength="500" placeholder="e.g. sent on 24 Oct">
+    <button class="btn" type="submit">Mark airtime as sent</button>
+  </form>
+  {% elif item.reviewer_note %}<p><strong>Reviewer note:</strong> {{ item.reviewer_note }}</p>{% endif %}
+</section>
+{% endfor %}
+{% endblock %}

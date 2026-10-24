@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Reward status{% endblock %}
+{% block steps %}<ol class="steps"><li class="done">Enter number</li><li class="done">Complete form</li><li class="done">Check eligibility</li><li class="done">Claim airtime</li></ol>{% endblock %}
+{% block content %}
+{% if claim.status == 'successful' %}
+<h1>₦{{ amount }} sent to {{ masked }}</h1>
+<p>Your {{ claim.network }} airtime was delivered. Reference: <code>{{ claim.provider_reference }}</code></p>
+{% elif claim.status == 'failed' %}
+<h1>The airtime could not be delivered</h1>
+<p>The provider reported a failed transaction. Contact support with this claim ID: <code>{{ claim.id }}</code>.</p>
+{% else %}
+<h1>We are confirming your airtime</h1>
+<p>The network has not confirmed delivery to {{ masked }} yet. Refresh this page in a few minutes. Do not submit another claim while the result is uncertain.</p>
+<p><a class="btn" href="{{ url_for('status') }}">Check status</a></p>
+{% endif %}
+{% endblock %}

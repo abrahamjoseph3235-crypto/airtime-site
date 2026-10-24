@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Upload submission evidence{% endblock %}
+{% block steps %}<ol class="steps"><li class="done">Enter number</li><li class="done">Complete form</li><li class="on">Upload evidence</li><li>Manual review</li></ol>{% endblock %}
+{% block content %}
+<h1>Upload your screenshots</h1>
+<p>Phone number: <strong>{{ phone }}</strong></p>
+<p>Upload both screenshots: one showing that you selected Kelechi as the referrer, and one showing the Google Form submission confirmation. Your phone number is already recorded by this website, so you do not need a phone-number screenshot. Your screenshots are private and available only to the site reviewer.</p>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+<form method="post" enctype="multipart/form-data" class="card upload-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label for="referral_screenshot">1. Screenshot showing the selected referrer Kelechi</label>
+  <input id="referral_screenshot" name="referral_screenshot" type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" required>
+  <label for="confirmation_screenshot">2. Google Form submission confirmation screenshot</label>
+  <input id="confirmation_screenshot" name="confirmation_screenshot" type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" required>
+  <label for="network">Mobile network for your reward</label>
+  <select id="network" name="network" required>
+    <option value="">Choose network</option>
+    {% for network in ["MTN", "Airtel", "Glo", "9mobile"] %}<option value="{{ network }}">{{ network }}</option>{% endfor %}
+  </select>
+  <p class="small">PNG, JPG, or WebP only. Maximum 4 MB per screenshot and 8 MB for the complete upload.</p>
+  <button class="btn" type="submit">Submit screenshots for manual review</button>
+</form>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Complete the application form{% endblock %}
+{% block steps %}<ol class="steps"><li class="done">Enter number</li><li class="on">Complete form</li><li>Upload evidence</li><li>Manual review</li></ol>{% endblock %}
+{% block content %}
+<h1>Complete the Google Form</h1>
+<p>Your phone number has been prefilled. On the referrer question, select <strong>Kelechi</strong> yourself. Make sure the phone number and referrer are visible in your screenshots.</p>
+<p class="notice"><strong>Manual review mode:</strong> the website cannot read the original form private responses. Screenshots will be reviewed manually. A click below does not independently verify submission with Google.</p>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+<iframe class="form-frame" src="{{ form_url }}" title="Airtime Reward Google Form" loading="lazy">Loading form…</iframe>
+<form method="post" action="{{ url_for('confirm_form_submission') }}" class="check-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label class="check-label"><input type="checkbox" name="confirm_read" value="yes" required> I have submitted the Google Form and understand that my screenshots will be reviewed manually.</label>
+  <button class="btn" type="submit">I have submitted the form — continue to upload</button>
+</form>
+<p class="small">After submitting the Google Form, take screenshots of the phone-number page, the selected referrer (Kelechi), and the submission confirmation page. The website unlocks the upload page when you confirm; it cannot independently verify Google's submission.</p>
+<p><a href="{{ url_for('index') }}">Use a different phone number</a></p>
+{% endblock %}

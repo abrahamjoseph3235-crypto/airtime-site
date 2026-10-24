@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Claim airtime{% endblock %}
+{% block steps %}<ol class="steps"><li class="done">Enter number</li><li class="done">Complete form</li><li class="done">Check eligibility</li><li class="on">Claim airtime</li></ol>{% endblock %}
+{% block content %}
+<h1>Claim your ₦{{ amount }} airtime</h1>
+<p>Your form response passed the eligibility check for {{ masked }}. Choose the network for that number. You do not need to enter the phone number again.</p>
+<form method="post" class="card voucher">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label for="network">Mobile network</label>
+  <select id="network" name="network" required>
+    <option value="" disabled selected>Choose network</option>
+    {% for n in networks %}<option>{{ n }}</option>{% endfor %}
+  </select>
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  <button class="btn" type="submit">Claim ₦{{ amount }} airtime</button>
+</form>
+{% endblock %}

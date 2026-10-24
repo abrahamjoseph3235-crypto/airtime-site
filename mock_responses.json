@@ -1,0 +1,5 @@
+[
+  {"responseId": "mock-eligible-1", "phone": "08030000001", "referral": "Kelechi"},
+  {"responseId": "mock-ineligible-referral", "phone": "08030000002", "referral": "Someone Else"},
+  {"responseId": "mock-ineligible-no-referral", "phone": "08030000003", "referral": ""}
+]

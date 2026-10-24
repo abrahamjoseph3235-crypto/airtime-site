@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Evidence submission status{% endblock %}
+{% block steps %}<ol class="steps"><li class="done">Enter number</li><li class="done">Complete form</li><li class="done">Upload evidence</li><li class="on">Manual review</li></ol>{% endblock %}
+{% block content %}
+<h1>Evidence submitted</h1>
+<p>Your screenshots have been saved for manual review.</p>
+<div class="card">
+  <p><strong>Phone:</strong> {{ phone[:4] }}****{{ phone[-3:] }}</p>
+  <p><strong>Network:</strong> {{ submission.network }}</p>
+  <p><strong>Review status:</strong> <span class="status status-{{ submission.status }}">{{ submission.status|capitalize }}</span></p>
+  <p><strong>Submitted:</strong> {{ submission.created_at.strftime("%d %b %Y, %H:%M UTC") }}</p>
+  {% if submission.reviewer_note %}<p><strong>Reviewer note:</strong> {{ submission.reviewer_note }}</p>{% endif %}
+</div>
+<p class="notice">This status means your screenshots were received, not that your eligibility has been confirmed or airtime has been sent. The owner will inspect the evidence and handle any approved airtime manually.</p>
+<p><a href="{{ url_for('index') }}">Back to start</a></p>
+{% endblock %}
