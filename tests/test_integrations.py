@@ -69,7 +69,7 @@ def test_phone_normalization():
     assert normalize_nigerian_phone("123") is None
 
 
-def test_mock_verifier_requires_phone_and_kelechi_referral():
+def test_mock_verifier_requires_phone_and_full_referral_name():
     verifier = MockVerifier()
     assert verifier.find_eligible_response("08030000001") == "mock-eligible-1"
     assert verifier.find_eligible_response("08030000002") is None
@@ -82,7 +82,7 @@ def test_google_verifier_matches_phone_and_referral():
             "responseId": "eligible-response",
             "answers": {
                 "phone-question": {"textAnswers": {"answers": [{"value": "+2348030000001"}]}},
-                "referral-question": {"textAnswers": {"answers": [{"value": "  Kelechi "}]}}
+                "referral-question": {"textAnswers": {"answers": [{"value": "  Kelechi Ndubueze "}]}}
             }
         }]
     }])
@@ -109,7 +109,7 @@ def test_google_verifier_paginates_responses():
             "responseId": "page-two",
             "answers": {
                 "phone-question": {"textAnswers": {"answers": [{"value": "08030000001"}]}},
-                "referral-question": {"textAnswers": {"answers": [{"value": "Kelechi"}]}}
+                "referral-question": {"textAnswers": {"answers": [{"value": "Kelechi Ndubueze"}]}}
             }
         }]}
     ])

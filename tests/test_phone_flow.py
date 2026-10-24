@@ -87,7 +87,7 @@ def test_phone_is_entered_once_and_prefilled_into_form():
     assert response.status_code == 200
     assert b"entry.551363144=08030000001" in response.data
     # Referrer is intentionally not prefilled: the user must select it.
-    assert b"entry.1296999881=Kelechi" not in response.data
+    assert b"entry.1296999881=Kelechi Ndubueze" not in response.data
     assert b"selected referrer" in response.data.lower()
 
 

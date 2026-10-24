@@ -18,7 +18,7 @@ The website uses a manual evidence-review workflow. Automated Google Forms eligi
 
 1. Applicant enters a Nigerian mobile number once.
 2. The website embeds the original Google Form and prefills only the phone number.
-3. Applicant selects the referrer `Kelechi`, completes and submits the Google Form.
+3. Applicant selects the referrer `Kelechi Ndubueze`, completes and submits the Google Form.
 4. Applicant checks a confirmation box on the website to unlock evidence upload.
 5. Applicant uploads two screenshots: the selected referrer page and the Google Forms submission confirmation. The phone number is already collected by the website, so no phone-number screenshot is required.
 6. Applicant chooses the intended mobile network and submits evidence.

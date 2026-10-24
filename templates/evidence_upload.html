@@ -4,11 +4,11 @@
 {% block content %}
 <h1>Upload your screenshots</h1>
 <p>Phone number: <strong>{{ phone }}</strong></p>
-<p>Upload both screenshots: one showing that you selected Kelechi as the referrer, and one showing the Google Form submission confirmation. Your phone number is already recorded by this website, so you do not need a phone-number screenshot. Your screenshots are private and available only to the site reviewer.</p>
+<p>Upload both screenshots: one showing that you selected Kelechi Ndubueze as the referrer, and one showing the Google Form submission confirmation. Your phone number is already recorded by this website, so you do not need a phone-number screenshot. Your screenshots are private and available only to the site reviewer.</p>
 {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
 <form method="post" enctype="multipart/form-data" class="card upload-card">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  <label for="referral_screenshot">1. Screenshot showing the selected referrer Kelechi</label>
+  <label for="referral_screenshot">1. Screenshot showing the selected referrer Kelechi Ndubueze</label>
   <input id="referral_screenshot" name="referral_screenshot" type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" required>
   <label for="confirmation_screenshot">2. Google Form submission confirmation screenshot</label>
   <input id="confirmation_screenshot" name="confirmation_screenshot" type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" required>

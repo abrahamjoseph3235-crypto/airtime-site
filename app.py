@@ -76,7 +76,7 @@ logging.basicConfig(level=logging.INFO)
 
 AMOUNT_KOBO = int(float(os.getenv("AIRTIME_AMOUNT_NAIRA", "100")) * 100)
 NETWORKS = ["MTN", "Airtel", "Glo", "9mobile"]
-EXPECTED_REFERRAL = "Kelechi"
+EXPECTED_REFERRAL = "Kelechi Ndubueze"
 MIN_FORM_TIME_SECONDS = 90
 FORM_VIEW_URL = os.getenv(
     "GOOGLE_FORM_VIEW_URL",

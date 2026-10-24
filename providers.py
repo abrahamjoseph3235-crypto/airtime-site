@@ -31,7 +31,7 @@ class MockVerifier:
         for response in self._responses:
             response_phone = normalize_nigerian_phone(response.get("phone", ""))
             referral = str(response.get("referral", "")).strip()
-            if response_phone == wanted and referral == "Kelechi":
+            if response_phone == wanted and referral == "Kelechi Ndubueze":
                 return response.get("responseId")
         return None
 
@@ -110,7 +110,7 @@ class GoogleFormsVerifier:
                     self._answer_value(response, question_ids["phone"]) or ""
                 )
                 referral = (self._answer_value(response, question_ids["referral"]) or "").strip()
-                if form_phone == wanted_phone and referral == "Kelechi":
+                if form_phone == wanted_phone and referral == "Kelechi Ndubueze":
                     response_id = response.get("responseId")
                     if response_id:
                         return response_id
