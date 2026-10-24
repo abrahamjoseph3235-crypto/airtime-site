@@ -76,6 +76,12 @@ def upload_evidence(client, phone="08030000001"):
     )
 
 
+def test_health_check_returns_ok():
+    response = app.test_client().get("/health")
+    assert response.status_code == 200
+    assert response.data == b"ok"
+
+
 def test_phone_is_entered_once_and_prefilled_into_form():
     client = app.test_client()
     response = client.get("/")

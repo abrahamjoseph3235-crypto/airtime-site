@@ -257,6 +257,13 @@ def security_headers(resp):
     return resp
 
 
+@app.get("/health")
+@limiter.exempt
+def health_check():
+    """Unthrottled health endpoint for the hosting platform."""
+    return "ok", 200
+
+
 @app.route("/", methods=["GET", "POST"])
 @limiter.limit("10 per hour", methods=["POST"])
 def index():
