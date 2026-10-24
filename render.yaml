@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: airtime-reward-site-staging
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 2 --threads 4 --timeout 120
+    healthCheckPath: /
+    autoDeploy: false
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: APP_ENV
+        value: staging
+      - key: EVIDENCE_STORAGE
+        value: r2
+      - key: AIRTIME_AMOUNT_NAIRA
+        value: "100"
+      - key: VERIFIER
+        value: mock
+      - key: AIRTIME_PROVIDER
+        value: mock
+      - key: AIRTIME_VTUAGENT_ALLOW_REQUESTS
+        value: "false"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_REVIEW_PASSWORD
+        sync: false
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        sync: false

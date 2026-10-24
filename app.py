@@ -7,10 +7,11 @@ import secrets
 import time
 import uuid
 from datetime import datetime, timedelta, timezone
+import mimetypes
 from urllib.parse import urlencode
 
 from dotenv import load_dotenv
-from flask import Flask, abort, redirect, render_template, request, session, url_for, send_from_directory
+from flask import Flask, abort, redirect, render_template, request, session, url_for, send_file
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
@@ -21,29 +22,49 @@ from PIL import Image, UnidentifiedImageError
 
 
 load_dotenv()
-IS_PROD = os.getenv("APP_ENV", "development").lower() == "production"
+APP_ENV = os.getenv("APP_ENV", "development").strip().lower()
+IS_PROD = APP_ENV == "production"
+IS_STAGING = APP_ENV == "staging"
 SECRET = os.getenv("SECRET_KEY")
-if IS_PROD and not SECRET:
-    raise RuntimeError("SECRET_KEY must be set in production")
-if IS_PROD and not os.getenv("ADMIN_REVIEW_PASSWORD"):
-    raise RuntimeError("ADMIN_REVIEW_PASSWORD must be set in production for the private review dashboard.")
+if (IS_PROD or IS_STAGING) and not SECRET:
+    raise RuntimeError("SECRET_KEY must be set in staging and production")
+if (IS_PROD or IS_STAGING) and not os.getenv("ADMIN_REVIEW_PASSWORD", "").strip():
+    raise RuntimeError("ADMIN_REVIEW_PASSWORD must be set in staging and production to protect the private review dashboard.")
 SECRET = SECRET or secrets.token_hex(32)
 
 db_url = os.getenv("DATABASE_URL", "sqlite:///dev.db")
+# Use psycopg 3 explicitly for all PostgreSQL URLs; it is the driver installed by requirements.txt.
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql+psycopg://", 1)
+elif db_url.startswith("postgresql://"):
+    db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+if (IS_PROD or IS_STAGING) and not db_url.startswith(("postgresql://", "postgresql+psycopg://")):
+    raise RuntimeError("Staging and production require a managed PostgreSQL DATABASE_URL; local SQLite is not durable.")
+EVIDENCE_STORAGE = os.getenv("EVIDENCE_STORAGE", "local").strip().lower()
+CF_ACCESS_TEAM_DOMAIN = os.getenv("CLOUDFLARE_ACCESS_TEAM_DOMAIN", "").strip().removeprefix("https://").strip("/")
+CF_ACCESS_AUD = os.getenv("CLOUDFLARE_ACCESS_AUD", "").strip()
+if (IS_PROD or IS_STAGING) and EVIDENCE_STORAGE != "r2":
+    raise RuntimeError("Staging and production require EVIDENCE_STORAGE=r2 for durable screenshot storage.")
+if (IS_PROD or IS_STAGING) and not all(os.getenv(name, "").strip() for name in ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET_NAME")):
+    raise RuntimeError("Staging and production require R2 account, access key, secret key, and bucket settings.")
+if IS_PROD and (not CF_ACCESS_TEAM_DOMAIN or not CF_ACCESS_AUD):
+    raise RuntimeError("Production requires CLOUDFLARE_ACCESS_TEAM_DOMAIN and CLOUDFLARE_ACCESS_AUD to protect reviewer routes.")
+if EVIDENCE_STORAGE not in ("local", "r2"):
+    raise RuntimeError("EVIDENCE_STORAGE must be 'local' or 'r2'.")
 
 app = Flask(__name__)
 app.config.update(
     SECRET_KEY=SECRET,
     SQLALCHEMY_DATABASE_URI=db_url,
-    SESSION_COOKIE_SECURE=IS_PROD,
+    SESSION_COOKIE_SECURE=(IS_PROD or IS_STAGING),
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
     PERMANENT_SESSION_LIFETIME=timedelta(minutes=30),
     MAX_CONTENT_LENGTH=12 * 1024 * 1024,  # Three screenshots, maximum 12 MiB total
     EVIDENCE_FOLDER=os.path.join(app.instance_path, "evidence"),
 )
+if db_url.startswith(("postgresql://", "postgresql+psycopg://")):
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True, "pool_recycle": 300}
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
 limiter = Limiter(
@@ -125,9 +146,100 @@ class EvidenceSubmission(db.Model):
     reviewed_at = db.Column(db.DateTime)
 
 
+def _r2_client():
+    """Create an S3-compatible Cloudflare R2 client only when R2 storage is selected."""
+    import boto3
+    account_id = os.getenv("R2_ACCOUNT_ID", "").strip()
+    access_key = os.getenv("R2_ACCESS_KEY_ID", "").strip()
+    secret_key = os.getenv("R2_SECRET_ACCESS_KEY", "").strip()
+    bucket = os.getenv("R2_BUCKET_NAME", "").strip()
+    if not all((account_id, access_key, secret_key, bucket)):
+        raise RuntimeError("R2 storage requires R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY and R2_BUCKET_NAME.")
+    return boto3.client(
+        "s3",
+        endpoint_url=f"https://{account_id}.r2.cloudflarestorage.com",
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key,
+        region_name="auto",
+    )
+
+
+def _save_evidence(upload, filename, ext):
+    """Store evidence locally for development or in private R2 for production."""
+    if EVIDENCE_STORAGE == "r2":
+        upload.stream.seek(0)
+        _r2_client().put_object(
+            Bucket=os.environ["R2_BUCKET_NAME"],
+            Key=filename,
+            Body=upload.stream,
+            ContentType={".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp"}[ext],
+        )
+    else:
+        os.makedirs(app.config["EVIDENCE_FOLDER"], exist_ok=True)
+        upload.save(os.path.join(app.config["EVIDENCE_FOLDER"], filename))
+    return filename
+
+
+def _delete_evidence(filename):
+    if EVIDENCE_STORAGE == "r2":
+        _r2_client().delete_object(Bucket=os.environ["R2_BUCKET_NAME"], Key=filename)
+    else:
+        try:
+            os.remove(os.path.join(app.config["EVIDENCE_FOLDER"], filename))
+        except OSError:
+            pass
+
+
+def _read_evidence(filename):
+    if EVIDENCE_STORAGE == "r2":
+        response = _r2_client().get_object(Bucket=os.environ["R2_BUCKET_NAME"], Key=filename)
+        return response["Body"].read()
+    with open(os.path.join(app.config["EVIDENCE_FOLDER"], filename), "rb") as handle:
+        return handle.read()
+
+
+def _verify_cloudflare_access():
+    """Validate Cloudflare Access when configured; reviewer login still requires its password."""
+    if not CF_ACCESS_TEAM_DOMAIN and not CF_ACCESS_AUD:
+        # Staging may initially use the app's strong password login while Access is configured.
+        # Production startup explicitly requires both values.
+        return
+    if not (CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD):
+        abort(403)
+    assertion = request.headers.get("Cf-Access-Jwt-Assertion", "")
+    if not assertion:
+        abort(403)
+    try:
+        import jwt
+        jwks_client = jwt.PyJWKClient(
+            f"https://{CF_ACCESS_TEAM_DOMAIN}/cdn-cgi/access/certs",
+            cache_keys=True,
+            lifespan=300,
+        )
+        signing_key = jwks_client.get_signing_key_from_jwt(assertion)
+        jwt.decode(
+            assertion,
+            signing_key.key,
+            algorithms=["RS256"],
+            audience=CF_ACCESS_AUD,
+            issuer=f"https://{CF_ACCESS_TEAM_DOMAIN}",
+            options={"require": ["exp", "iat", "iss", "aud", "sub"]},
+        )
+    except Exception:
+        log.warning("Cloudflare Access token validation failed for a reviewer request.")
+        abort(403)
+
+
+@app.before_request
+def protect_reviewer_routes_with_cloudflare_access():
+    if request.path == "/review" or request.path.startswith("/review/"):
+        _verify_cloudflare_access()
+
+
 with app.app_context():
     db.create_all()
-    os.makedirs(app.config["EVIDENCE_FOLDER"], exist_ok=True)
+    if EVIDENCE_STORAGE == "local":
+        os.makedirs(app.config["EVIDENCE_FOLDER"], exist_ok=True)
 
 
 @app.after_request
@@ -253,7 +365,7 @@ def evidence_upload():
         try:
             for label, upload, ext in checked:
                 filename = f"{uuid.uuid4().hex}{ext}"
-                upload.save(os.path.join(app.config["EVIDENCE_FOLDER"], filename))
+                _save_evidence(upload, filename, ext)
                 saved[label] = filename
             record = EvidenceSubmission(
                 phone=phone,
@@ -270,9 +382,9 @@ def evidence_upload():
             db.session.rollback()
             for filename in saved.values():
                 try:
-                    os.remove(os.path.join(app.config["EVIDENCE_FOLDER"], filename))
-                except OSError:
-                    pass
+                    _delete_evidence(filename)
+                except Exception:
+                    log.exception("Could not clean up orphaned evidence object %s", filename)
             existing = EvidenceSubmission.query.filter_by(phone=phone).first()
             if existing:
                 return render_template("evidence_status.html", submission=existing, phone=phone)
@@ -281,9 +393,9 @@ def evidence_upload():
             db.session.rollback()
             for filename in saved.values():
                 try:
-                    os.remove(os.path.join(app.config["EVIDENCE_FOLDER"], filename))
-                except OSError:
-                    pass
+                    _delete_evidence(filename)
+                except Exception:
+                    log.exception("Could not clean up orphaned evidence object %s", filename)
             log.exception("Evidence upload failed.")
             return render_template("evidence_upload.html", phone=phone, error="Upload failed. Please try again."), 500
         session.pop("submission_confirmed", None)
@@ -292,7 +404,6 @@ def evidence_upload():
 
 
 @app.route("/review", methods=["GET", "POST"])
-@limiter.exempt
 def review_dashboard():
     admin_password = os.getenv("ADMIN_REVIEW_PASSWORD", "")
     if not admin_password:
@@ -372,9 +483,17 @@ def review_evidence_image(submission_id, kind):
     }.get(kind)
     if not filename:
         abort(404)
-    return send_from_directory(
-        app.config["EVIDENCE_FOLDER"], filename, as_attachment=True,
-        download_name=f"submission-{submission_id}-{kind}{os.path.splitext(filename)[1]}"
+    try:
+        payload = _read_evidence(filename)
+    except Exception:
+        log.exception("Evidence object retrieval failed for submission %s", submission_id)
+        abort(404)
+    return send_file(
+        io.BytesIO(payload),
+        mimetype=mimetypes.guess_type(filename)[0] or "application/octet-stream",
+        as_attachment=True,
+        download_name=f"submission-{submission_id}-{kind}{os.path.splitext(filename)[1]}",
+        max_age=0,
     )
 
 

@@ -14,3 +14,14 @@ _preintegration_backup_*/
 node_modules/
 .vscode/
 .venv/
+
+# Local deployment CLI cache; never commit tool dependencies
+.cloudflare-tools/
+.neon
+
+# Local Neon connection variables; never commit credentials
+.env.neon
+.env.local
+
+
+.env.pre-neon-backup

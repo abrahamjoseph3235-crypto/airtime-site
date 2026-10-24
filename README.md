@@ -56,3 +56,24 @@ Tests use mock integrations and a temporary evidence directory. They do not acce
 - Consider adding stronger admin authentication (for example, MFA), reviewer audit logs, and a deletion schedule for screenshots containing personal information.
 - Do not collect more personal information than necessary; tell users how screenshots are used and how long they are retained.
 - Do not switch on automated airtime or provider credentials without a separate, explicit approval and provider validation.
+
+
+## Production persistence and reviewer protection
+
+The application supports local disk for development or private Cloudflare R2 for production. Set EVIDENCE_STORAGE=r2 and configure R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, and R2_BUCKET_NAME. Keep the bucket private. Create an R2 API token limited to that bucket and store its values as deployment secrets. Screenshots are stored as private objects and retrieved only after reviewer authorization.
+
+Use managed PostgreSQL for production by setting DATABASE_URL to the provider's PostgreSQL connection string. The app rejects SQLite when APP_ENV=production and enables SQLAlchemy connection health checks for PostgreSQL. Do not copy local dev.db into production as a substitute for a managed database. Before launch, run a reviewed database migration and configure automated backups and restore testing.
+
+### Cloudflare Access (required for production)
+
+Create a Cloudflare Access self-hosted application for the exact production hostname and path /review* (include /review and all /review/... routes). Create an allow policy limited to the owner's verified email identity. In the app deployment environment, set CLOUDFLARE_ACCESS_TEAM_DOMAIN to the Access team hostname without https:// and CLOUDFLARE_ACCESS_AUD to the Access application's audience tag. Also set APP_ENV=production, SECRET_KEY, ADMIN_REVIEW_PASSWORD, a PostgreSQL DATABASE_URL, and the R2 settings above.
+
+The app validates the signed Cf-Access-Jwt-Assertion JWT (signature, issuer, audience, and expiry) on every reviewer request. Keep the Access application in front of the origin as well; do not expose an alternate unprotected production hostname. The existing reviewer password remains a second check. Production startup intentionally fails if PostgreSQL, R2, or Access settings are absent.
+
+### Deployment platform note
+
+This repository is a conventional Flask application using Pillow and SQLAlchemy. Wrangler is installed and authenticated, but a native Cloudflare Python Worker deployment is not configured; Python Worker package compatibility and persistent storage need a separately validated port. A practical first production topology is a Python host for Flask, managed PostgreSQL, private Cloudflare R2, and Cloudflare Access protecting the reviewer path. Do not set Wrangler build/deploy fields to arbitrary commands or publish before the production environment and database migration are configured.
+
+### Secret hygiene
+
+Never put real passwords, API tokens, database URLs, or R2 keys in this repository. Rotate any real password that was ever committed in .env.example.
