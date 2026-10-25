@@ -1,15 +1,59 @@
 {% extends "base.html" %}
-{% block title %}Start your airtime reward{% endblock %}
-{% block steps %}<ol class="steps"><li class="on">Enter number</li><li>Complete form</li><li>Upload evidence</li><li>Manual review</li></ol>{% endblock %}
+{% block title %}Airtime Reward | Complete Simple Tasks{% endblock %}
+{% block steps %}{% endblock %}
 {% block content %}
-<h1>Apply for an airtime reward</h1>
-<p>Enter your Nigerian mobile number once. Complete the Google Form, upload screenshots, and wait for manual review. If approved, your provider-generated reward claim link will appear on your private Reward Status page.</p>
-<form method="post" class="card">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  <label for="phone">Respondent phone number</label>
-  <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="0803 000 0000" required maxlength="18" autocomplete="tel">
-  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
-  <button class="btn" type="submit">Continue to form</button>
-</form>
-<p class="small">You must provide screenshots showing the phone number, the selected referrer Kelechi Ndubueze, and the form submission confirmation. Each phone number can submit evidence only once.</p>
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow"><span class="eyebrow-dot"></span> SIMPLE STEPS. AIRTIME REWARDS.</p>
+    <h1>Complete Simple Tasks,<br><span>Get Airtime Rewards!</span></h1>
+    <p class="hero-lead">Take a few minutes to complete the form and upload your evidence. Once reviewed, you can check your private reward status right here.</p>
+    <div class="trust-points">
+      <div class="trust-point"><span class="trust-icon shield-icon">✓</span><span><strong>Private &amp; Secure</strong><small>Your evidence is reviewed privately</small></span></div>
+      <div class="trust-point"><span class="trust-icon bolt-icon">ϟ</span><span><strong>Simple Process</strong><small>Clear steps from start to review</small></span></div>
+      <div class="trust-point"><span class="trust-icon gift-icon">✦</span><span><strong>Airtime Rewards</strong><small>For approved submissions</small></span></div>
+    </div>
+    <form method="post" class="card start-card">
+      <div class="card-heading"><span class="step-number">1</span><div><strong>Start your reward application</strong><small>Enter your Nigerian mobile number to continue.</small></div></div>
+      <label for="phone">Your phone number</label>
+      <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="0803 000 0000" required maxlength="18" autocomplete="tel">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+      <button class="btn" type="submit">Get Started <span aria-hidden="true">→</span></button>
+      <p class="small form-hint">Each phone number can submit evidence only once.</p>
+    </form>
+  </div>
+  <div class="hero-art" aria-label="Airtime reward illustration">
+    <div class="art-glow"></div>
+    <div class="confetti confetti-one"></div><div class="confetti confetti-two"></div><div class="confetti confetti-three"></div>
+    <div class="network-tile mtn-tile"><span class="network-logo">MTN</span></div>
+    <div class="network-tile airtel-tile"><span class="airtel-symbol">a</span><strong>airtel</strong></div>
+    <div class="network-tile glo-tile"><strong>glo</strong></div>
+    <div class="network-tile nine-tile"><strong>9</strong><small>9mobile</small></div>
+    <div class="phone-illustration">
+      <div class="phone-speaker"></div>
+      <div class="phone-screen">
+        <div class="success-check">✓</div>
+        <strong>Airtime<br>Reward</strong>
+        <p>Complete.<br>Verify.<br>Get rewarded.</p>
+        <div class="screen-progress"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+    <div class="art-caption"><span>✦</span> A few simple steps can get you started</div>
+  </div>
+</section>
+<section class="process-panel" id="how-it-works">
+  <div class="section-heading"><p class="eyebrow">HOW IT WORKS</p><h2>Four simple steps</h2><p>Follow each step and keep your private status link for updates.</p></div>
+  <div class="process-steps">
+    <div class="process-step"><span class="process-icon">▯</span><span class="process-number">01</span><strong>Enter number</strong><small>Start with your Nigerian mobile number.</small></div>
+    <span class="process-arrow" aria-hidden="true">→</span>
+    <div class="process-step"><span class="process-icon">☷</span><span class="process-number">02</span><strong>Complete form</strong><small>Fill out the survey carefully.</small></div>
+    <span class="process-arrow" aria-hidden="true">→</span>
+    <div class="process-step"><span class="process-icon">▧</span><span class="process-number">03</span><strong>Upload evidence</strong><small>Send the requested screenshots.</small></div>
+    <span class="process-arrow" aria-hidden="true">→</span>
+    <div class="process-step"><span class="process-icon">⌕</span><span class="process-number">04</span><strong>Review</strong><small>Check your private reward status.</small></div>
+  </div>
+  <a class="btn process-cta" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Get Started Now <span aria-hidden="true">→</span></a>
+</section>
+<section class="notice-strip"><span class="notice-icon">i</span><p><strong>Please note:</strong> submissions are reviewed manually. Airtime is not sent automatically when you submit the form; approved rewards are coordinated separately.</p></section>
+<p class="small privacy-note">Please make sure your screenshots show the selected referrer <strong>Kelechi Ndubueze</strong> and your form submission confirmation. Only upload the requested evidence.</p>
 {% endblock %}

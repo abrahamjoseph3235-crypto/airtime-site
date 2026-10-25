@@ -3,15 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087849">
+  <meta name="description" content="Complete the survey, submit your evidence, and check your private airtime reward status after review.">
   <title>{% block title %}Airtime Reward{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <header class="top"><a href="{{ url_for('index') }}">Airtime Reward</a></header>
+  <header class="top">
+    <a class="brand" href="{{ url_for('index') }}" aria-label="Airtime Reward home">
+      <span class="brand-mark" aria-hidden="true">AR<span class="brand-swoosh"></span></span>
+      <span class="brand-name">Airtime<br>Reward</span>
+    </a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="{{ url_for('index') }}">Home</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#important-info">Important Info</a>
+      <a class="nav-cta" href="{{ url_for('index') }}">Get Started</a>
+    </nav>
+  </header>
   <main>
     {% block steps %}{% endblock %}
     {% block content %}{% endblock %}
   </main>
-  <footer>We use your phone number and screenshots to review reward applications, prevent duplicate submissions, and coordinate approved rewards manually.</footer>
+  <footer id="important-info">
+    <span class="footer-shield" aria-hidden="true">✓</span>
+    <span>Your information is handled for review and reward coordination.</span>
+    <span class="footer-divider" aria-hidden="true"></span>
+    <span>Powered by <strong class="footer-brand">AR</strong> Airtime Reward</span>
+    <p class="footer-note">Rewards are subject to evidence review. Approval on this website does not automatically send airtime; approved rewards are coordinated manually.</p>
+  </footer>
 </body>
 </html>

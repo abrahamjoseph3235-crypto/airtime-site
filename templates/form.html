@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Complete the application form{% endblock %}
-{% block steps %}<ol class="steps"><li class="done">Enter number</li><li class="on">Complete form</li><li>Upload evidence</li><li>Manual review</li></ol>{% endblock %}
+{% block steps %}<ol class="steps"><li class="done">Enter number</li><li class="on">Complete form</li><li>Upload evidence</li><li>Review</li></ol>{% endblock %}
 {% block content %}
 <h1>Complete the Google Form</h1>
-<p>Your phone number has been prefilled. On the referrer question, select <strong>Kelechi Ndubueze</strong> yourself. Make sure the phone number and referrer are visible in your screenshots.</p>
+<p>Your phone number has been prefilled. Kindly enter your individual business name in the space provided. Your response is highly appreciated, as this information will help us better understand and document the businesses represented in this survey. Thank you for your time, cooperation, and valuable contribution. On the referrer question, select <strong>Kelechi Ndubueze</strong> yourself. Please make sure both your phone number and the selected referrer are clearly visible in your screenshots.</p>
 {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
 <iframe class="form-frame" src="{{ form_url }}" title="Airtime Reward Google Form" loading="lazy">Loading form…</iframe>
 <form method="post" action="{{ url_for('confirm_form_submission') }}" class="check-form">
