@@ -225,6 +225,79 @@ def test_private_review_requires_login_and_approval_is_manual_only():
         assert RewardClaim.query.count() == 0
 
 
+def test_reward_status_hides_provider_link_until_approval_and_polls():
+    client = app.test_client()
+    start_phone_flow(client)
+    confirm_submission(client)
+    response = upload_evidence(client)
+    assert response.status_code == 200
+
+    with app.app_context():
+        record = EvidenceSubmission.query.filter_by(phone="08030000001").one()
+        submission_id = record.id
+        token = record.reward_token
+        assert token
+
+    status_page = client.get(f"/reward-status/{token}")
+    assert status_page.status_code == 200
+    assert b"reward-status.js" in status_page.data
+
+    pending = client.get(f"/api/reward-status/{token}")
+    assert pending.status_code == 200
+    assert pending.json["status"] == "pending"
+    assert "reward_url" not in pending.json
+
+    client.post("/review", data={"password": "test-review-password"})
+    response = client.post(
+        f"/review/{submission_id}/approve",
+        data={"reviewer_note": "Screenshots verified"},
+    )
+    assert response.status_code == 302
+
+    approved_without_link = client.get(f"/api/reward-status/{token}")
+    assert approved_without_link.status_code == 200
+    assert approved_without_link.json["status"] == "approved"
+    assert approved_without_link.json["reward_ready"] is False
+    assert "reward_url" not in approved_without_link.json
+
+    provider_link = "https://provider.example/claim/sample-token"
+    response = client.post(
+        f"/review/{submission_id}/save-link",
+        data={"provider_reward_url": provider_link},
+    )
+    assert response.status_code == 302
+
+    approved = client.get(f"/api/reward-status/{token}")
+    assert approved.status_code == 200
+    assert approved.json["status"] == "approved"
+    assert approved.json["reward_ready"] is True
+    assert approved.json["reward_url"] == provider_link
+
+    # Status tokens are private; unknown tokens reveal no participant information.
+    assert client.get("/api/reward-status/not-a-real-token").status_code == 404
+
+
+def test_provider_reward_link_requires_https():
+    client = app.test_client()
+    start_phone_flow(client)
+    confirm_submission(client)
+    upload_evidence(client)
+    client.post("/review", data={"password": "test-review-password"})
+    with app.app_context():
+        record = EvidenceSubmission.query.filter_by(phone="08030000001").one()
+        submission_id = record.id
+
+    response = client.post(
+        f"/review/{submission_id}/approve",
+        data={"provider_reward_url": "http://provider.example/claim"},
+    )
+    assert response.status_code == 400
+    with app.app_context():
+        record = db.session.get(EvidenceSubmission, submission_id)
+        assert record.status == "pending"
+        assert record.provider_reward_url is None
+
+
 def test_legacy_claim_history_blocks_repeat_evidence():
     from sqlalchemy import text
 

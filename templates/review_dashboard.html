@@ -2,10 +2,10 @@
 {% block title %}Private evidence review{% endblock %}
 {% block content %}
 <h1>Evidence review</h1>
-<p>Review screenshots carefully before manually sending any airtime. An approval here records your decision only; it does not send airtime.</p>
+<p>Review screenshots carefully. Approval makes the provider link available on the participant's private Reward Status page; it does not generate the provider link or trigger a payout.</p>
 <div class="stats-grid" aria-label="Submission totals">
   <section class="card"><p class="small">Unique phone numbers submitted</p><p class="stat-number">{{ total_phone_numbers }}</p></section>
-  <section class="card"><p class="small">Eligible phone numbers</p><p class="stat-number">{{ eligible_phone_numbers }}</p><p class="small">Approved or airtime marked as sent</p></section>
+  <section class="card"><p class="small">Eligible phone numbers</p><p class="stat-number">{{ eligible_phone_numbers }}</p><p class="small">Approved submissions</p></section>
   <section class="card"><p class="small">Awaiting review</p><p class="stat-number">{{ pending_count }}</p></section>
 </div>
 <form method="post" action="{{ url_for('review_logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-secondary" type="submit">Sign out</button></form>
@@ -24,8 +24,11 @@
   {% if item.status == "pending" %}
   <form method="post" action="{{ url_for('review_decision', submission_id=item.id, decision='approve') }}" class="review-decision">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="provider-link-a-{{ item.id }}">Provider-generated claim link (optional)</label>
+    <input id="provider-link-a-{{ item.id }}" name="provider_reward_url" type="url" inputmode="url" placeholder="https://..." autocomplete="off">
+    <p class="small">Paste the HTTPS link supplied by the airtime provider, or leave blank and add it after approval.</p>
     <label for="note-a-{{ item.id }}">Reviewer note (optional)</label><input id="note-a-{{ item.id }}" name="reviewer_note" maxlength="500">
-    <button class="btn" type="submit">Approve for manual reward</button>
+    <button class="btn" type="submit">Approve screenshots</button>
   </form>
   <form method="post" action="{{ url_for('review_decision', submission_id=item.id, decision='reject') }}" class="review-decision">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -33,11 +36,14 @@
     <button class="btn btn-danger" type="submit">Reject evidence</button>
   </form>
   {% elif item.status == "approved" %}
-  <p>Approved. After you manually send the airtime outside this website, record it here.</p>
-  <form method="post" action="{{ url_for('review_decision', submission_id=item.id, decision='mark-sent') }}" class="review-decision">
+  <p>Evidence approved. The participant's Reward Status page will reveal the provider link once you save it here.</p>
+  {% if item.provider_reward_url %}<p><strong>Provider link saved:</strong> <a href="{{ item.provider_reward_url }}" target="_blank" rel="noopener noreferrer">Open provider link</a></p>{% else %}<p><strong>Provider link:</strong> Not added yet</p>{% endif %}
+  <form method="post" action="{{ url_for('review_decision', submission_id=item.id, decision='save-link') }}" class="review-decision">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label for="sent-note-{{ item.id }}">Delivery note (optional)</label><input id="sent-note-{{ item.id }}" name="reviewer_note" maxlength="500" placeholder="e.g. sent on 24 Oct">
-    <button class="btn" type="submit">Mark airtime as sent</button>
+    <label for="provider-link-{{ item.id }}">Provider-generated claim link (HTTPS)</label>
+    <input id="provider-link-{{ item.id }}" name="provider_reward_url" type="url" inputmode="url" placeholder="https://..." value="{{ item.provider_reward_url or '' }}" required autocomplete="off">
+    <label for="note-link-{{ item.id }}">Reviewer note (optional)</label><input id="note-link-{{ item.id }}" name="reviewer_note" maxlength="500">
+    <button class="btn" type="submit">Save provider link</button>
   </form>
   {% elif item.reviewer_note %}<p><strong>Reviewer note:</strong> {{ item.reviewer_note }}</p>{% endif %}
 </section>

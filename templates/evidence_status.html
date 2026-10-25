@@ -9,8 +9,9 @@
   <p><strong>Network:</strong> {{ submission.network }}</p>
   <p><strong>Review status:</strong> <span class="status status-{{ submission.status }}">{{ submission.status|capitalize }}</span></p>
   <p><strong>Submitted:</strong> {{ submission.created_at.strftime("%d %b %Y, %H:%M UTC") }}</p>
-  {% if submission.reviewer_note %}<p><strong>Reviewer note:</strong> {{ submission.reviewer_note }}</p>{% endif %}
+  {% if submission.reviewer_note and submission.status == "rejected" %}<p><strong>Reviewer note:</strong> {{ submission.reviewer_note }}</p>{% endif %}
+  <p><a class="btn" href="{{ url_for('reward_status_page', token=submission.reward_token) }}">Open Reward Status</a></p>
 </div>
-<p class="notice">This status means your screenshots were received, not that your eligibility has been confirmed or airtime has been sent. The owner will inspect the evidence and handle any approved airtime manually.</p>
+<p class="notice">Save the private Reward Status page link so you can return later. It checks for review updates automatically. Your provider claim link will appear there only after your screenshots are approved and a provider-generated link has been added. Anyone with your private status link may be able to view your reward status, so do not share it.</p>
 <p><a href="{{ url_for('index') }}">Back to start</a></p>
 {% endblock %}

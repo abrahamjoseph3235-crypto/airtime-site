@@ -3,7 +3,7 @@
 {% block steps %}<ol class="steps"><li class="on">Enter number</li><li>Complete form</li><li>Upload evidence</li><li>Manual review</li></ol>{% endblock %}
 {% block content %}
 <h1>Apply for an airtime reward</h1>
-<p>Enter your Nigerian mobile number once. Complete the Google Form, upload screenshots, and wait for manual review. Approved rewards are delivered manually by the owner.</p>
+<p>Enter your Nigerian mobile number once. Complete the Google Form, upload screenshots, and wait for manual review. If approved, your provider-generated reward claim link will appear on your private Reward Status page.</p>
 <form method="post" class="card">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <label for="phone">Respondent phone number</label>

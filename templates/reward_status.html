@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Reward Status{% endblock %}
+{% block steps %}<ol class="steps"><li class="done">Enter number</li><li class="done">Complete form</li><li class="done">Upload evidence</li><li class="on">Reward status</li></ol>{% endblock %}
+{% block content %}
+<h1>Reward Status</h1>
+<p>We check your review status automatically. You can bookmark this page and return later using this same private link.</p>
+<section class="card" id="reward-status" data-status-url="{{ status_url }}" aria-live="polite">
+  <p><strong>Current status:</strong> <span id="reward-status-label">Checking your submission...</span></p>
+  <p id="reward-status-message">Please keep this page link so you can check again later.</p>
+  <div id="reward-link-container" hidden>
+    <p>Your screenshots have been approved. Your provider-generated reward claim link is ready:</p>
+    <p><a id="reward-link" class="btn" href="#" target="_blank" rel="noopener noreferrer">Open reward claim link</a></p>
+    <p class="small">The claim link is supplied by the airtime provider. Follow the provider's instructions to claim your reward.</p>
+  </div>
+  <p id="reward-review-note" class="small" hidden></p>
+  <p class="small" id="last-checked">Checking every 10 seconds while this page is open.</p>
+</section>
+<script src="{{ url_for('static', filename='reward-status.js') }}" defer></script>
+{% endblock %}
