@@ -12,8 +12,9 @@
       <div class="trust-point"><span class="trust-icon bolt-icon">ϟ</span><span><strong>Simple Process</strong><small>Clear steps from start to review</small></span></div>
       <div class="trust-point"><span class="trust-icon gift-icon">✦</span><span><strong>Airtime Rewards</strong><small>For approved submissions</small></span></div>
     </div>
+    <section class="start-section" id="start-form" aria-labelledby="start-form-title">
     <form method="post" class="card start-card">
-      <div class="card-heading"><span class="step-number">1</span><div><strong>Start your reward application</strong><small>Enter your Nigerian mobile number to continue.</small></div></div>
+      <div class="card-heading"><span class="step-number">1</span><div><strong id="start-form-title">Start your reward application</strong><small>Enter your Nigerian mobile number to continue.</small></div></div>
       <label for="phone">Your phone number</label>
       <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="0803 000 0000" required maxlength="18" autocomplete="tel">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -21,6 +22,7 @@
       <button class="btn" type="submit">Get Started <span aria-hidden="true">→</span></button>
       <p class="small form-hint">Each phone number can submit evidence only once.</p>
     </form>
+  </section>
   </div>
   <div class="hero-art" aria-label="Airtime reward illustration">
     <div class="art-glow"></div>
@@ -52,7 +54,7 @@
     <span class="process-arrow" aria-hidden="true">→</span>
     <div class="process-step"><span class="process-icon">⌕</span><span class="process-number">04</span><strong>Review</strong><small>Check your private reward status.</small></div>
   </div>
-  <a class="btn process-cta" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Get Started Now <span aria-hidden="true">→</span></a>
+  <a class="btn process-cta" href="#start-form">Get Started Now <span aria-hidden="true">→</span></a>
 </section>
 <section class="notice-strip"><span class="notice-icon">i</span><p><strong>Please note:</strong> submissions are reviewed manually. Airtime is not sent automatically when you submit the form; approved rewards are coordinated separately.</p></section>
 <p class="small privacy-note">Please make sure your screenshots show the selected referrer <strong>Kelechi Ndubueze</strong> and your form submission confirmation. Only upload the requested evidence.</p>

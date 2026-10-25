@@ -180,3 +180,15 @@ a { -webkit-tap-highlight-color: #08ad6020; }
 @media (hover: none) {
   .btn:hover { transform: none; }
 }
+
+/* The main call-to-action returns visitors directly to the phone-number form. */
+#start-form { scroll-margin-top: 24px; }
+#start-form .start-card { margin-top: 0; }
+#start-form:target .start-card { animation: start-form-highlight 1.2s ease-out; }
+@keyframes start-form-highlight {
+  0%, 100% { box-shadow: 0 16px 45px #0a5e3710; }
+  35% { box-shadow: 0 0 0 4px #08ad6030, 0 16px 45px #0a5e3710; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #start-form:target .start-card { animation: none; }
+}
